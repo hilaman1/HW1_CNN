@@ -21,15 +21,23 @@ class RandomImageDataset(Dataset):
         self.num_samples = num_samples
         self.image_dim = (C, W, H)
 
+        self.ds = [(torch.randint(0, 256, self.image_dim), torch.randint(0, num_classes, (1,))) for sample_idx in range(num_samples)]  # the database of the random images
+
     def __getitem__(self, index):
 
         # TODO: Create a random image tensor and return it.
         # Bonus if you make sure to always return the same image for the
         # same index (make it deterministic per index), but don't mess-up
         # RNG state outside this method.
-        torch.manual_seed(index)
-        rand_image = torch.randn(self.image_dim)
-        return rand_image
+
+        # rng_state = torch.random.get_rng_state()[0]  # getting the current rng state
+        # torch.random.manual_seed(index)  # setting the random seed for deterministic outcome
+        # img = torch.randint(0, 256, self.image_dim)  # random image
+        # cls = torch.randint(0, self.num_classes, (1,))  # random label
+        # torch.random.set_rng_state(rng_state)  # restore the rng state
+        # return img, cls
+
+        return self.ds[index]
 
     def __len__(self):
         return self.num_samples
@@ -56,11 +64,9 @@ class SubsetDataset(Dataset):
     def __getitem__(self, index):
         # TODO: Return the item at index + offset from the source dataset.
         # Make sure to raise an IndexError if index is out of bounds.
-        offset_index = index + self.offset
-        if index < 0 or index > self.subset_len or offset_index > self.subset_len:
-            raise IndexError("Index is out of bounds")
-        else:
-            return self.source_dataset[offset_index]
+        if index < 0 or index >= self.subset_len:
+            raise IndexError("Subset index is out of bounds")
+        return self.source_dataset[index + self.offset]
 
     def __len__(self):
         return self.subset_len
