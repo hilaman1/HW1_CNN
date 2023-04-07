@@ -30,9 +30,10 @@ def create_train_validation_loaders(
     # 1. Validation set size is validation_ratio * total number of samples.
     # 2. No sample is in both datasets. You can select samples at random
     #    from the dataset.
-
-    # ====== YOUR CODE: ======
-    raise NotImplementedError()
-    # ========================
-
+    # TODO check why its not working
+    validation_size = int(np.floor(dataset.subset_len * validation_ratio))
+    test_size = dataset.subset_len - validation_size
+    train_dataset, validation_dataset = torch.utils.data.random_split(dataset, [test_size, validation_size])
+    dl_train = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    dl_valid = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     return dl_train, dl_valid

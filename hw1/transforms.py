@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 
@@ -10,10 +11,11 @@ class TensorView(object):
         self.view_dims = view_dims
 
     def __call__(self, tensor: torch.Tensor):
-        # TODO: Use Tensor.view() to implement the transform.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        rensor_args = 1
+        for i in range(len(tensor.size())):
+            rensor_args *= tensor.size()[i]
+        flattened_tensor = tensor.resize(rensor_args,)
+        return flattened_tensor
 
 
 class BiasTrick(object):
@@ -24,12 +26,7 @@ class BiasTrick(object):
 
     def __call__(self, tensor: torch.Tensor):
         assert tensor.dim() == 1, "Only 1-d tensors supported"
-
-        # TODO: Add a 1 at the end of the given tensor.
-        # Make sure to use the same data type.
-
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        temp = torch.tensor([1])
+        torch.cat((tensor,temp))
 
 
