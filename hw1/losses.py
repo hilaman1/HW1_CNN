@@ -55,13 +55,18 @@ class SVMHingeLoss(ClassifierLoss):
 
         loss = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # x_scores[i,j] = W_i * x_j
+        #  -> s_j - s_{y_i} = x_scores[i,j] - x_scores[i,y_i]
+        M = x_scores - x_scores.gather(1, y.view(-1, 1)) + self.delta
+        M[torch.arange(y.shape[0]), y] = 0  # put 0 where the classification is correct
+        L_mat = torch.max(torch.zeros_like(M), M)
+        loss = L_mat.sum(dim=1).mean()
         # ========================
 
-        # TODO: Save what you need for gradient calculation in self.grad_ctx
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        # # TODO: Save what you need for gradient calculation in self.grad_ctx
+        # # ====== YOUR CODE: ======
+        # raise NotImplementedError()
+        # # ========================
 
         return loss
 

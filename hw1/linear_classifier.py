@@ -69,10 +69,11 @@ class LinearClassifier:
 
         acc = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        acc = torch.count_nonzero(y - y_pred) / torch.numel(y)
         # ========================
 
         return acc * 100
+
 
     def train(
             self,
