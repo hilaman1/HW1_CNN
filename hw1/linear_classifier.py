@@ -69,7 +69,8 @@ class LinearClassifier:
 
         acc = None
         # ====== YOUR CODE: ======
-        acc = torch.count_nonzero(y - y_pred) / torch.numel(y)
+        acc = 100.0 - (torch.count_nonzero(y - y_pred) / torch.numel(y)) * 100.0
+        acc /= 100.00
         # ========================
 
         return acc * 100
@@ -108,11 +109,33 @@ class LinearClassifier:
 
             # ====== YOUR CODE: ======
             # Evaluate accuracy on train set
-            mean_acc = 0
-            for (x, y) in dl_train:
+            for x, y in dl_train:
                 y_pred, class_scores = self.predict(x)
-                loss = loss_fn(class_scores, y) + weight_decay * torch.sum(self.weights**2)
-            mean_acc /= len(dl_train)
+                # calc correct prediction
+                total_correct += self.evaluate_accuracy(y,y_pred)
+                # calc current loss
+                current_loss = loss_fn(x, y, class_scores, y_pred) + weight_decay * torch.sum(self.weights ** 2)
+                self.weights = self.weights - learn_rate * (loss_fn.grad() + weight_decay * self.weights)
+                average_loss += current_loss
+
+            train_res.loss.append(average_loss / len(dl_train))
+            train_res.accuracy.append(total_correct/ len(dl_train))
+
+            total_correct = 0
+            average_loss = 0
+
+            # Evaluate accuracy on validation set
+            for x, y in dl_valid:
+                y_pred, class_scores = self.predict(x)
+                # calc correct prediction
+                total_correct += self.evaluate_accuracy(y,y_pred)
+                # calc current loss
+                current_loss = loss_fn(x, y, class_scores, y_pred) + weight_decay * torch.sum(self.weights ** 2)
+                self.weights = self.weights - learn_rate * (loss_fn.grad() + weight_decay * self.weights)
+                average_loss += current_loss
+
+            valid_res.loss.append(average_loss / len(dl_valid))
+            valid_res.accuracy.append(total_correct/ len(dl_valid))
             # ========================
             print('.', end='')
 
@@ -132,7 +155,12 @@ class LinearClassifier:
         # The output shape should be (n_classes, C, H, W).
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # if W contains bias, we need to delete the last row from W matrix
+        if has_bias:
+            W_mat_without_bias = self.weights[:-1]
+        else:
+            W_mat_without_bias = self.weights
+        w_images = W_mat_without_bias.view(self.n_classes, img_shape[0], img_shape[1], img_shape[2])
         # ========================
 
         return w_images

@@ -58,18 +58,17 @@ class SVMHingeLoss(ClassifierLoss):
         # x_scores[i,j] = W_i * x_j
         #  -> s_j - s_{y_i} = x_scores[i,j] - x_scores[i,y_i]
         M = x_scores - x_scores.gather(1, y.view(-1, 1)) + self.delta
-        M[torch.arange(y.shape[0]), y] = 0  # put 0 where the classification is correct
         L_mat = torch.max(torch.zeros_like(M), M)
-        loss = L_mat.sum(dim=1).mean()
-        # ========================
+        loss = (torch.sum(L_mat) - self.delta * x_scores.shape[0]) / torch.tensor(y.shape[0],dtype=float)
+        loss = torch.reshape(loss,(1,))
 
+        # ========================
         # TODO: Save what you need for gradient calculation in self.grad_ctx
         # ====== YOUR CODE: ======
         self.grad_ctx['x'] = x
         self.grad_ctx['y'] = y
         self.grad_ctx['M'] = M
         # ========================
-
         return loss
 
     def grad(self):
@@ -92,6 +91,15 @@ class SVMHingeLoss(ClassifierLoss):
         M[M > 0] = 1.0
         M[torch.arange(y.shape[0]), y] = -1 * torch.sum(M, dim=1)
         grad = (x.T @ M) / x.shape[0]
+
+        # M = self.grad_ctx['M']
+        # y = self.grad_ctx['y']
+        # x = self.grad_ctx['x']
+        # ones_zeros_M = torch.where(M > 0, torch.tensor(1.0), torch.tensor(0.0))
+        # ones_zeros_M[torch.arange(y.shape[0]), y] = -1 * torch.sum(ones_zeros_M, dim=1)
+        # grad = (x.T @ M) / x.shape[0]
+        # no regularization because we'll implement it later
+
 
         # ========================
 
