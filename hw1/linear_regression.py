@@ -5,6 +5,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from pandas import DataFrame
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
 
 
 class LinearRegressor(BaseEstimator, RegressorMixin):
@@ -98,7 +99,7 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         # TODO: Your custom initialization, if needed
         # Add any hyperparameters you need and save them as above
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.polynomial_features = PolynomialFeatures(degree)
         # ========================
 
     def fit(self, X, y=None):
@@ -120,7 +121,7 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        X_transformed = self.polynomial_features.fit_transform(X)
         # ========================
 
         return X_transformed
@@ -183,7 +184,14 @@ def cv_best_hyperparams(model: BaseEstimator, X, y, k_folds,
     # - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    kf = KFold(n_splits=k_folds, shuffle=True)
+    param_grid = {
+        'bostonfeaturestransformer__degree': degree_range,
+        'linearregressor__reg_lambda': lambda_range
+    }
+    grid_search = GridSearchCV(model, param_grid=param_grid, scoring="r2", cv=kf)
+    grid_search.fit(X,y)
+    best_params = grid_search.best_params_
     # ========================
 
     return best_params
