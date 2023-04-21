@@ -30,7 +30,9 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         y_pred = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # the prediction is w * x
+        # y_pred = np.dot(X, self.weights_)
+        y_pred = np.dot(self.weights_, X)
         # ========================
 
         return y_pred
@@ -48,7 +50,13 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         w_opt = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # the solution is (X^T*X + \lambda * I)^-1 * (X^T * y)
+        x = X
+        x_transpose = np.transpose(x)
+        x_transpose_x = np.dot(x_transpose,x)
+        lambda_i = np.dot(self.reg_lambda, np.identity(x_transpose_x.shape[0]))
+        x_transpose_y = np.dot(x_transpose, y)
+        w_opt = np.dot(np.invert(lambda_i), x_transpose_y
         # ========================
 
         self.weights_ = w_opt
@@ -74,7 +82,8 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
         xb = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        ones_column = np.ones((X.shape[0], 1))
+        xb = np.hstack((ones_column, X))
         # ========================
 
         return xb
@@ -136,7 +145,12 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
     # TODO: Calculate correlations with target and sort features by it
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    corr_MEDV = df.corr()['MEDV']
+    corr_MEDV = corr_MEDV.drop('MEDV')
+    corr_MEDV.sort_values(key=lambda x: abs(x), ascending=False, inplace=True)
+    corr_MEDV_first_5 = corr_MEDV.head(5)
+    top_n_features = corr_MEDV_first_5.index.to_numpy()
+    top_n_corr = corr_MEDV_first_5.values
     # ========================
 
     return top_n_features, top_n_corr
