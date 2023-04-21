@@ -107,7 +107,12 @@ class LinearClassifier:
             average_loss = 0
 
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            # Evaluate accuracy on train set
+            mean_acc = 0
+            for (x, y) in dl_train:
+                y_pred, class_scores = self.predict(x)
+                loss = loss_fn(class_scores, y) + weight_decay * torch.sum(self.weights**2)
+            mean_acc /= len(dl_train)
             # ========================
             print('.', end='')
 
