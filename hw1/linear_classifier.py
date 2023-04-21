@@ -69,8 +69,7 @@ class LinearClassifier:
 
         acc = None
         # ====== YOUR CODE: ======
-        acc = 100.0 - (torch.count_nonzero(y - y_pred) / torch.numel(y)) * 100.0
-        acc /= 100.00
+        acc = 1 - (torch.count_nonzero(y - y_pred) / torch.numel(y))
         # ========================
 
         return acc * 100
@@ -160,6 +159,7 @@ class LinearClassifier:
             W_mat_without_bias = self.weights[:-1]
         else:
             W_mat_without_bias = self.weights
+        W_mat_without_bias = torch.transpose(W_mat_without_bias, 0, 1)
         w_images = W_mat_without_bias.view(self.n_classes, img_shape[0], img_shape[1], img_shape[2])
         # ========================
 
