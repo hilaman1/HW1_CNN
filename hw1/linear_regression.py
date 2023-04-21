@@ -30,9 +30,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         y_pred = None
         # ====== YOUR CODE: ======
-        # the prediction is w * x
-        # y_pred = np.dot(X, self.weights_)
-        y_pred = np.dot(self.weights_, X)
+        # the prediction is x * w
+        y_pred = np.dot(X, self.weights_)
         # ========================
 
         return y_pred
@@ -56,7 +55,7 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
         x_transpose_x = np.dot(x_transpose,x)
         lambda_i = np.dot(self.reg_lambda, np.identity(x_transpose_x.shape[0]))
         x_transpose_y = np.dot(x_transpose, y)
-        w_opt = np.dot(np.invert(lambda_i), x_transpose_y
+        w_opt = np.dot(np.linalg.inv(x_transpose_x + lambda_i), x_transpose_y)
         # ========================
 
         self.weights_ = w_opt
