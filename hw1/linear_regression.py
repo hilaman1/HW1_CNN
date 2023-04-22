@@ -5,6 +5,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from pandas import DataFrame
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
 
 
 class LinearRegressor(BaseEstimator, RegressorMixin):
@@ -30,7 +31,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         y_pred = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # the prediction is x * w
+        y_pred = np.dot(X, self.weights_)
         # ========================
 
         return y_pred
@@ -48,7 +50,13 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         w_opt = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # the solution is (X^T*X + \lambda * I)^-1 * (X^T * y)
+        x = X
+        x_transpose = np.transpose(x)
+        x_transpose_x = np.dot(x_transpose, x)
+        lambda_i = np.dot(self.reg_lambda, np.identity(x_transpose_x.shape[0]))
+        x_transpose_y = np.dot(x_transpose, y)
+        w_opt = np.dot(np.linalg.inv(x_transpose_x + lambda_i), x_transpose_y)
         # ========================
 
         self.weights_ = w_opt
@@ -74,7 +82,8 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
         xb = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        ones_column = np.ones((X.shape[0], 1))
+        xb = np.hstack((ones_column, X))
         # ========================
 
         return xb
@@ -90,7 +99,7 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         # TODO: Your custom initialization, if needed
         # Add any hyperparameters you need and save them as above
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.polynomial_features = PolynomialFeatures(degree)
         # ========================
 
     def fit(self, X, y=None):
@@ -112,7 +121,7 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        X_transformed = self.polynomial_features.fit_transform(X)
         # ========================
 
         return X_transformed
@@ -136,7 +145,12 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
     # TODO: Calculate correlations with target and sort features by it
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    corr_MEDV = df.corr()['MEDV']
+    corr_MEDV = corr_MEDV.drop('MEDV')
+    corr_MEDV.sort_values(key=lambda x: abs(x), ascending=False, inplace=True)
+    corr_MEDV_first_5 = corr_MEDV.head(5)
+    top_n_features = corr_MEDV_first_5.index.to_numpy()
+    top_n_corr = corr_MEDV_first_5.values
     # ========================
 
     return top_n_features, top_n_corr
@@ -170,7 +184,14 @@ def cv_best_hyperparams(model: BaseEstimator, X, y, k_folds,
     # - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    kf = KFold(n_splits=k_folds, shuffle=True)
+    param_grid = {
+        'bostonfeaturestransformer__degree': degree_range,
+        'linearregressor__reg_lambda': lambda_range
+    }
+    grid_search = GridSearchCV(model, param_grid=param_grid, scoring="r2", cv=kf)
+    grid_search.fit(X, y)
+    best_params = grid_search.best_params_
     # ========================
 
     return best_params
